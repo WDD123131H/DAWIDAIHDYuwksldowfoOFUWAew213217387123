@@ -11,7 +11,6 @@ pygame.display.set_caption("Speed Demon - Advanced Boss Mode")
 clock = pygame.time.Clock()
 FPS = 90
 
-# Цвета
 WHITE = (255, 255, 255)
 RED = (255, 0, 0)
 YELLOW = (255, 255, 0)
@@ -19,24 +18,19 @@ ORANGE = (255, 150, 0)
 PLAYER_COLOR = (0, 255, 0)
 BG_COLOR = (20, 20, 20)
 
-# Игрок
 player_size = 20
 player_speed = 5
 player = pygame.Rect(WIDTH // 2, HEIGHT - 100, player_size, player_size)
 
-# Босс
 boss_radius = 60
 boss_pos = [WIDTH // 2, HEIGHT // 2]
 boss_hp = 5
 
-# Прицел
 cursor_radius = 10
 
-# Пули
 bullet_speed = 6
 bullets = []
 
-# Орбы-клоны
 clone_rings = []
 last_clone_time = 0
 clone_wave_index = 0
@@ -44,13 +38,12 @@ clone_wave_timer = 0
 clone_active = False
 
 # Настройки кольца
-RING_DISTANCE = 250  # Увеличено расстояние от игрока
-RING_SHOOT_DELAY = 0.5  # секунды
+RING_DISTANCE = 250  
+RING_SHOOT_DELAY = 0.5  
 RING_WAVE_INTERVAL = 0.4
 RING_COOLDOWN = 5
-RING_MOVE_DELAY = 1  # Задержка перед движением орбов в секундах
+RING_MOVE_DELAY = 1  
 
-# Спавн обычных пуль
 def spawn_bullets():
     for angle in range(0, 360, 30):
         rad = math.radians(angle)
@@ -65,7 +58,6 @@ def spawn_bullets():
         dx, dy = dx / dist * bullet_speed, dy / dist * bullet_speed
         bullets.append([boss_pos[0], boss_pos[1], dx, dy])
 
-# Спавн кольца
 def spawn_clone_ring(pos):
     clones = []
     for angle in range(0, 360, 30):
@@ -88,7 +80,6 @@ def is_cursor_on_boss(mouse_pos):
     dy = mouse_pos[1] - boss_pos[1]
     return math.hypot(dx, dy) < boss_radius
 
-# Основной цикл
 running = True
 spawn_timer = 0
 
@@ -109,7 +100,6 @@ while running:
                     pygame.quit()
                     sys.exit()
 
-    # Управление
     keys = pygame.key.get_pressed()
     if keys[pygame.K_w]: player.y -= player_speed
     if keys[pygame.K_s]: player.y += player_speed
@@ -117,26 +107,22 @@ while running:
     if keys[pygame.K_d]: player.x += player_speed
     player.clamp_ip(pygame.Rect(0, 0, WIDTH, HEIGHT))
 
-    # Спавн обычных пуль
     spawn_timer += dt
     if spawn_timer >= 1.2:
         spawn_bullets()
         spawn_timer = 0
 
-    # Обновление пуль
     for b in bullets:
         b[0] += b[2]
         b[1] += b[3]
     bullets = [b for b in bullets if 0 <= b[0] <= WIDTH and 0 <= b[1] <= HEIGHT]
 
-    # Урон от пуль
     for b in bullets:
         if player.collidepoint(b[0], b[1]):
             print("YOU DIED")
             pygame.quit()
             sys.exit()
 
-    # Кольцо орбов (3 волны)
     time_since_last = pygame.time.get_ticks() / 1000 - last_clone_time
     if time_since_last >= RING_COOLDOWN and not clone_active:
         clone_active = True
@@ -154,7 +140,6 @@ while running:
             clone_active = False
             clone_wave_timer = 0
 
-    # Обновление орбов с задержкой
     for ring in clone_rings:
         for orb in ring:
             orb["timer"] += dt
@@ -172,7 +157,6 @@ while running:
                 orb["x"] += orb["dx"]
                 orb["y"] += orb["dy"]
 
-    # Урон от орбов
     for ring in clone_rings:
         for orb in ring:
             if player.collidepoint(orb["x"], orb["y"]) and orb.get("fired", False):
@@ -180,7 +164,6 @@ while running:
                 pygame.quit()
                 sys.exit()
 
-    # Удаление орбов за экраном
     for ring in clone_rings:
         ring[:] = [orb for orb in ring if 0 <= orb["x"] <= WIDTH and 0 <= orb["y"] <= HEIGHT]
     clone_rings[:] = [ring for ring in clone_rings if len(ring) > 0]
@@ -197,7 +180,6 @@ while running:
             color = ORANGE if orb.get("fired", False) else YELLOW
             pygame.draw.circle(win, color, (int(orb["x"]), int(orb["y"])), 8)
 
-    # Рендер прицела
     pygame.draw.circle(win, WHITE, mouse_pos, cursor_radius, 2)
 
     pygame.display.update()
